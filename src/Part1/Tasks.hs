@@ -25,7 +25,6 @@ myCosTaylor x k m
   | k > m = 0
   | otherwise = (((-1)**(k)) * (x**(2 * k)) / fact (2 * k)) + (myCosTaylor x (k + 1) m)
 
-
 fact i = if i <= 1 then 1 else i * fact (i - 1)
 
 normalize :: Double -> Double
@@ -45,10 +44,6 @@ myGCD a b
 
 -- является ли дата корректной с учётом количества дней в месяце и
 -- вискокосных годов?
-minValidYear = 1970
-bigMonths = [1, 3, 5, 7, 8, 10, 12]
-commonMonths = [4, 6, 9, 7, 11]
-
 isFebruaryCorrect :: Integer -> Integer -> Bool
 isFebruaryCorrect day year
   | day < 29 = True
@@ -64,6 +59,10 @@ isDateCorrect day month year
   | month `elem` commonMonths && day<=30 = True
   | month == 2 = isFebruaryCorrect day year
   | otherwise = False
+  where
+    minValidYear = 1970
+    bigMonths = [1, 3, 5, 7, 8, 10, 12]
+    commonMonths = [4, 6, 9, 7, 11]
 
 -- возведение числа в степень, duh
 -- готовые функции и плавающую арифметику использовать нельзя
