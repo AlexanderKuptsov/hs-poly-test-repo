@@ -16,13 +16,28 @@ rlistToList lst =
 
 -- Реализуйте обратное преобразование
 listToRlist :: [a] -> ReverseList a
-listToRlist = notImplementedYet
+listToRlist = foldl (:<) REmpty
 
 -- Реализуйте все представленные ниже классы (см. тесты)
-instance Show (ReverseList a) where
+instance (Show a) => Show (ReverseList a) where
     showsPrec = notImplementedYet
-    show = notImplementedYet
-instance Eq (ReverseList a) where
+    show REmpty = "[]"
+    show lst = "[" ++ (rlistJoin lst) ++ "]"
+
+rlistJoin :: (Show a) => (ReverseList a) -> String
+rlistJoin (REmpty :< last) = show last
+rlistJoin (lst :< last) = rlistJoin(lst) ++ "," ++ (show last)
+
+instance (Eq a) => Eq (ReverseList a) where
+--    (==) REmpty REmpty = True
+--    (==) REmpty (lst :< last) = False
+--    (==) (lst :< last) REmpty = False
+--    (==) (lst1 :< last1) (lst2 :< last2) = (last1 == last2) && (lst1 == lst2)
+--
+--    (/=) REmpty REmpty = False
+--    (/=) REmpty (lst :< last) = True
+--    (/=) (lst :< last) REmpty = True
+--    (/=) (lst1 :< last1) (lst2 :< last2) = (last1 /= last2) && (lst1 /= lst2)
     (==) = notImplementedYet
     (/=) = notImplementedYet
 instance Semigroup (ReverseList a) where
