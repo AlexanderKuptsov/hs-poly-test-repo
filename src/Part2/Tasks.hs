@@ -38,7 +38,7 @@ evaluate :: Term -> Term
 evaluate expression =
   case expression of
     BinaryTerm op lhv rhv ->
-      case (op, simplify(lhv), simplify(rhv)) of
+      case (op, simplify lhv, simplify rhv) of
         (Plus, IntConstant const1, IntConstant const2) -> IntConstant (const1 + const2)
         (Minus, IntConstant const1, IntConstant const2) -> IntConstant (const1 - const2)
         (Times, IntConstant const1, IntConstant const2) -> IntConstant (const1 * const2)
@@ -47,5 +47,5 @@ evaluate expression =
     where
       simplify term =
         case term of
-                BinaryTerm _ _ _ -> evaluate(term)
+                BinaryTerm _ _ _ -> evaluate term
                 _ -> term

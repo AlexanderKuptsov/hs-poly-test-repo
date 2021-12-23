@@ -7,28 +7,37 @@ import Data.List
 mySin :: Double -> Double
 mySin x = mySin' x 125
 
-mySin' x m = mySinTaylor (normalize x) 0 m
+mySin' x m = mySinTaylor normalizedX 0 m
+  where
+    normalizedX = normalize x
 
 mySinTaylor :: Double -> Double -> Double -> Double
 mySinTaylor x k m
   | k > m = 0
-  | otherwise = (((-1)**(k)) * (x**(2 * k + 1)) / fact (2 * k + 1)) + (mySinTaylor x (k + 1) m)
+  | otherwise = ((-1)**(k)) * (x**(2 * k + 1)) / (fact $ 2 * k + 1) + mySinTaylor x (k + 1) m
 
 -- косинус числа (формула Тейлора)
 myCos :: Double -> Double
 myCos x = myCos' x 125
 
-myCos' x m = myCosTaylor (normalize x) 0 m
+myCos' x m = myCosTaylor normalizedX 0 m
+  where
+    normalizedX = normalize x
 
 myCosTaylor :: Double -> Double -> Double -> Double
 myCosTaylor x k m
   | k > m = 0
-  | otherwise = (((-1)**(k)) * (x**(2 * k)) / fact (2 * k)) + (myCosTaylor x (k + 1) m)
+  | otherwise = ((-1)**(k)) * (x**(2 * k)) / (fact $ 2 * k) + myCosTaylor x (k + 1) m
 
-fact i = if i <= 1 then 1 else i * fact (i - 1)
+factEndless = 1 : zipWith (*) factEndless [1..]
+fact :: Double -> Double
+fact i = factEndless !! (round i)
 
 normalize :: Double -> Double
-normalize x = x - 2 * pi * (fromIntegral $ floor (x / (2 * pi)))
+normalize x = x - overflow
+  where
+    overflow = circle * (fromIntegral $ floor $ x / circle)
+    circle = 2 * pi
 
 -- наибольший общий делитель двух чисел
 myGCD :: Integer -> Integer -> Integer
@@ -37,26 +46,28 @@ myGCD a b
   | y == 0 = x
   | otherwise = myGCD (maxN `mod` minN) minN
   where
-     x = abs(a)
-     y = abs(b)
-     minN = (min x y)
-     maxN = (max x y)
+     x = abs a
+     y = abs b
+     minN = min x y
+     maxN = max x y
 
 -- является ли дата корректной с учётом количества дней в месяце и
 -- вискокосных годов?
 isFebruaryCorrect :: Integer -> Integer -> Bool
 isFebruaryCorrect day year
   | day < 29 = True
-  | (day == 29  && (year `mod` 400 == 0 || (year `mod` 4 == 0 && year `mod` 100 /= 0))) = True
+  | day == 29 && isLeapYear = True
   | otherwise = False
+  where
+    isLeapYear = year `mod` 400 == 0 || (year `mod` 4 == 0 && year `mod` 100 /= 0)
 
 isDateCorrect :: Integer -> Integer -> Integer -> Bool
 isDateCorrect day month year
   | year < minValidYear = False
   | month < 1 || month > 12 = False
   | day < 1 = False
-  | month `elem` bigMonths && day <=31 = True
-  | month `elem` commonMonths && day<=30 = True
+  | month `elem` bigMonths && day <= 31 = True
+  | month `elem` commonMonths && day <= 30 = True
   | month == 2 = isFebruaryCorrect day year
   | otherwise = False
   where
@@ -88,17 +99,18 @@ type Point2D = (Double, Double)
 -- рассчитайте площадь многоугольника по формуле Гаусса
 -- многоугольник задан списком координат
 shapeArea :: [Point2D] -> Double
-shapeArea points = 0.5 * abs(gaussLeft - gaussRight)
+shapeArea points = 0.5 * abs (gaussLeft - gaussRight)
   where
     gaussLeft = gaussSeq points fst snd
     gaussRight = gaussSeq points snd fst
 
-gaussSeq points f1 f2 = f1(points !! (n - 1)) * f2(points !! 0) + (gaussSeq' 0)
+gaussSeq :: [Point2D] -> (Point2D -> Double) -> (Point2D -> Double) -> Double
+gaussSeq points f1 f2 = f1 (points !! (n - 1)) * f2 (points !! 0) + gaussSeq' 0
   where
     n = length points
     gaussSeq' i
-      | i == (n - 1) = 0
-      | otherwise = f1(points !! i) * f2(points !! (i + 1)) + (gaussSeq' (i + 1))
+      | i == n - 1 = 0
+      | otherwise = f1 (points !! i) * f2 (points !! (i + 1)) + gaussSeq' (i + 1)
 
 -- треугольник задан длиной трёх своих сторон.
 -- функция должна вернуть
@@ -108,7 +120,7 @@ gaussSeq points f1 f2 = f1(points !! (n - 1)) * f2(points !! 0) + (gaussSeq' 0)
 --  -1, если это не треугольник
 triangleKind :: Double -> Double -> Double -> Integer
 triangleKind a b c
-  | maxSide >= otherSide1 + otherSide2 || maxSideSqr <= abs(otherSide1 - otherSide2) = -1
+  | maxSide >= otherSide1 + otherSide2 || maxSideSqr <= abs (otherSide1 - otherSide2) = -1
   | maxSideSqr == otherSidesSqrSum = 1
   | maxSideSqr < otherSidesSqrSum = 0
   | maxSideSqr > otherSidesSqrSum = 2
