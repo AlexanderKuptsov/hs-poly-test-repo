@@ -20,28 +20,45 @@ listToRlist = foldl (:<) REmpty
 
 -- Реализуйте все представленные ниже классы (см. тесты)
 instance (Show a) => Show (ReverseList a) where
-    showsPrec = notImplementedYet
-    show REmpty = "[]"
-    show lst = "[" ++ rlistJoin lst ++ "]"
-
-rlistJoin :: (Show a) => (ReverseList a) -> String
-rlistJoin (REmpty :< last) = show last
-rlistJoin (lst :< last) = rlistJoin lst ++ "," ++ show last
+-- Минимальное определение: show или showsPrec
+  show REmpty = "[]"
+  show lst = "[" ++ rlistJoin lst ++ "]"
+    where
+      rlistJoin rLst = case rLst of
+        (REmpty :< last) -> show last
+        (init :< last) -> rlistJoin init ++ "," ++ show last
 
 instance (Eq a) => Eq (ReverseList a) where
---    (==) REmpty REmpty = True
---    (==) REmpty (lst :< last) = False
---    (==) (lst :< last) REmpty = False
---    (==) (lst1 :< last1) (lst2 :< last2) = last1 == last2 && lst1 == lst2
---
---    (/=) REmpty REmpty = False
---    (/=) REmpty (lst :< last) = True
---    (/=) (lst :< last) REmpty = True
---    (/=) (lst1 :< last1) (lst2 :< last2) = last1 /= last2 && lst1 /= lst2
-    (==) = notImplementedYet
-    (/=) = notImplementedYet
+-- Минимальное определение: == или /=
+  (==) REmpty REmpty = True
+  (==) REmpty (init :< last) = False
+  (==) (init :< last) REmpty = False
+  (==) (init1 :< last1) (init2 :< last2) = last1 == last2 && init1 == init2
+
 instance Semigroup (ReverseList a) where
+  (<>) REmpty REmpty = REmpty
+  (<>) lst REmpty = lst
+  (<>) REmpty lst = lst
+  (<>) lst1 (init2 :< last2) = lst1 <> init2 :< last2
+
 instance Monoid (ReverseList a) where
+  mempty = REmpty
+  mappend = (<>)
+  mconcat = foldr mappend mempty
+
 instance Functor ReverseList where
+  fmap f REmpty = REmpty
+  fmap f (init :< last) = fmap f init :< f last
+
 instance Applicative ReverseList where
+  pure a = REmpty :< a
+  (<*>) lst REmpty = REmpty
+  (<*>) REmpty lst = REmpty
+  (<*>) (init1 :< last1) lst @ (init2 :< last2) = (init1 <*> lst) <> mappedPart
+    where
+      mappedPart = (fmap last1 init2) :< last1 last2
+
 instance Monad ReverseList where
+  return a = (REmpty :< a)
+  (>>=) REmpty f = REmpty
+  (>>=) (init :< last) f = (init >>= f) <> (f last)
